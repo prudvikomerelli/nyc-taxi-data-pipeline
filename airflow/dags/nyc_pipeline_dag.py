@@ -1,24 +1,14 @@
 from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.utils.dates import days_ago
+from airflow.operators.bash_operator import BashOperator
+from datetime import datetime
 
 default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False
+    'start_date': datetime(2023, 1, 1)
 }
 
-with DAG(
-    'nyc_taxi_pipeline',
-    default_args=default_args,
-    description='ETL DAG for NYC Taxi Data',
-    schedule_interval='@daily',
-    start_date=days_ago(1),
-    catchup=False,
-) as dag:
+with DAG('nyc_taxi_etl', schedule_interval=None, default_args=default_args, catchup=False) as dag:
 
-    transform = BashOperator(
-        task_id='run_spark_transform',
-        bash_command='spark-submit /opt/airflow/dags/../spark_jobs/transform_data.py'
+    run_spark_etl = BashOperator(
+        task_id='run_spark_etl',
+        bash_command='/opt/spark/bin/spark-submit /spark/spark_etl.py'
     )
-
-    transform
